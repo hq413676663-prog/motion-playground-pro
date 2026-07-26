@@ -8,12 +8,22 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20260726-7">
+<link rel="stylesheet" href="visual-system.css?v=20260726-26">
 </head>
 <body>
+<div class="launch-loader" id="launchLoader" role="status" aria-label="动效工坊正在加载">
+  <div class="launch-loader-mark" aria-hidden="true">
+    <span class="launch-loader-icon">
+      <i class="fas fa-cube"></i>
+    </span>
+    <span class="launch-loader-word"><span>动</span><span>效</span><span>工</span><span>坊</span></span>
+  </div>
+  <div class="launch-loader-progress" aria-hidden="true"><span></span></div>
+</div>
 <div class="app">
   <nav class="sidebar">
-    <div class="sidebar-brand"><i class="fas fa-cube" style="color:#6c5ce7;font-size:20px;"></i>动效<span>工坊</span></div>
+    <div class="sidebar-brand"><i class="fas fa-cube" style="color:#134fff;font-size:20px;"></i>动效<span>工坊</span></div>
     <ul class="sidebar-nav" id="navList">
       <li class="active" data-category="tab"><i class="fas fa-window-maximize"></i><span>选项卡</span></li>
       <li data-category="text"><i class="fas fa-font"></i><span>文字</span></li>
@@ -40,6 +50,10 @@
       <section class="editor-preview-pane">
         <div class="editor-section-label">实时预览</div>
         <div class="editor-live-stage" id="editorLiveStage"></div>
+        <div class="direction-control" id="directionControl">
+          <button class="direction-dial" id="directionDial" type="button" aria-label="拖动调整动画方向，按住 Shift 吸附到 45 度"><span class="direction-needle"></span></button>
+          <div class="direction-value"><span>方向</span><label><input id="editorDirection" type="number" min="-360" max="360" step="1" value="0"><span>°</span></label></div>
+        </div>
       </section>
       <div class="editor-settings">
     <div class="editor-body">
@@ -152,6 +166,6 @@
     </div>
   </div>
 </div>
-<script src="script.js?v=20260725-2"></script>
+<script src="script.js?v=20260726-23"></script>
 </body>
 </html>
