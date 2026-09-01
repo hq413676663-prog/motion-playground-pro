@@ -1,47 +1,14 @@
-# Motion Playground Pro
+# 动效工坊空壳网站
 
-UI 动画参数测试与参考工具，专为设计师在制作 Figma 高保真 Demo 时快速测试、查看、复制动画参数。
+这个目录保留原动效工坊的完整界面、编辑器、样式和预览能力，但网站代码本身不内置动效卡片。
 
-## 使用
+使用方式：
 
-双击 `index.html` 在浏览器打开即可。
+1. 打开 `index.html` 对应的网站。
+2. 点击“选择动效库”。
+3. 选择 `我的动效库.motionlib`。
+4. 网站恢复该文件中的动效卡片、分组和参数。
 
-## 功能
+浏览器会缓存最近导入的动效库数据，刷新或再次访问时会自动恢复。右上角菜单中的“打开动效库”可以切换到另一个库。
 
-- **Tab** — 10 种 Tab 切换动画
-- **Text** — 10 种文字入场动画
-- **Button** — 8 种按钮交互动画
-- **Card** — 6 种卡片悬浮/状态动画
-- **List** — 3 种列表 Stagger 动画
-
-每个 Demo 展示：
-- 实时动画效果（可点击/悬浮体验）
-- 参数：Duration、Delay、Curve
-- 一键复制 CSS 代码
-
-## 项目结构
-
-```
-Motion-Playground-Pro/
-├── index.html       ← 入口
-├── style.css        ← 样式
-├── script.js        ← 主逻辑
-├── animations/      ← 各分类动画数据
-│   ├── tab.js
-│   ├── text.js
-│   ├── button.js
-│   ├── card.js
-│   └── list.js
-└── README.md
-```
-
-## 设计参考
-
-- Figma — 暗色主题、卡片式布局
-- Linear — 简洁导航、参数标签
-- Apple Design — 动画曲线、质感
-- ChatGPT — 清晰的信息层级
-
-## 技术
-
-纯 HTML + CSS + JavaScript，无第三方依赖，双击即可运行。
+`generate-library.js` 用于从旧项目重新生成初始动效库文件，不属于网站运行依赖。

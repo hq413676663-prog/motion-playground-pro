@@ -93,7 +93,7 @@ function makeCustomDemo(data){
     try{importedPreview=(new Function('return ('+data.previewSource+')'))()}catch(e){}
     if(typeof importedPreview==='function')return {_id:data._id,_sourceData:data,name:data.name,duration:data.duration||'300ms',curve:data.curve||'ease-out',direction:Object.prototype.hasOwnProperty.call(data,'direction')?Number(data.direction):null,exitCurve:data.exitCurve,delay:data.delay||'0s',css:data.css||'',exitEnabled:data.cancelExit!==true,desc:data.desc||'导入的动效卡片',preview:importedPreview};
   }
-  return {_id:data._id,_sourceData:data,name:data.name,duration:data.duration||'300ms',curve:data.curve||'ease-out',direction:Object.prototype.hasOwnProperty.call(data,'direction')?Number(data.direction):null,css:data.css||'animation: fadeUp .3s ease-out both',exitEnabled:data.cancelExit!==true,desc:data.fileName?'上传文件 · '+data.fileName:'自定义动效',preview:function(c){
+  return {_id:data._id,_sourceData:data,name:data.name,duration:data.duration||'300ms',curve:data.curve||'ease-out',direction:Object.prototype.hasOwnProperty.call(data,'direction')?Number(data.direction):null,delay:data.delay||'0s',css:data.css||'animation: fadeUp .3s ease-out both',exitEnabled:data.cancelExit!==true,desc:data.fileName?'上传文件 · '+data.fileName:'自定义动效',preview:function(c){
     if(data.previewType==='html'&&data.fileContent){var f=document.createElement('iframe');f.className='uploaded-preview';f.sandbox='allow-scripts';f.srcdoc=data.fileContent;c.replaceChildren(f);return}
     if(data.previewType==='image'&&data.fileContent){var im=document.createElement('img');im.className='uploaded-media';im.src=data.fileContent;im.alt=data.name;c.replaceChildren(im);return}
     if(data.previewType==='video'&&data.fileContent){var v=document.createElement('video');v.className='uploaded-media';v.src=data.fileContent;v.muted=true;v.loop=true;v.playsInline=true;v.addEventListener('mouseenter',function(){v.play().catch(function(){})});v.addEventListener('mouseleave',function(){v.pause();v.currentTime=0});c.replaceChildren(v);return}
@@ -198,6 +198,22 @@ function previewHoverSelector(key,demo){
   if(key==='list')return'.list-items';
   return'';
 }
+function triggerEditorPreview(container,demo,key,selector){
+  clearTimeout(container._exitTimer);
+  var target=selector?container.querySelector(selector):container;
+  if(container._previewActive&&demo.exitEnabled){
+    if(target){var leaveEvent=new MouseEvent('mouseleave',{bubbles:false});leaveEvent._motionClickTrigger=true;target.dispatchEvent(leaveEvent)}
+    playExitAnimations(container,demo);container._previewActive=false;
+    container._exitTimer=setTimeout(function(){if(!container.isConnected)return;if(target){var restoreEvent=new MouseEvent('mouseenter',{bubbles:false});restoreEvent._motionClickTrigger=true;target.dispatchEvent(restoreEvent)}triggerPreviewAnimations(container);container._previewActive=true},8000);
+    return;
+  }
+  if(container._previewActive){var resetEvent=new MouseEvent('mouseleave',{bubbles:false});resetEvent._motionClickTrigger=true;if(target)target.dispatchEvent(resetEvent);void container.offsetWidth}
+  var playEnter=function(){if(target){var enterEvent=new MouseEvent('mouseenter',{bubbles:false});enterEvent._motionClickTrigger=true;target.dispatchEvent(enterEvent)}triggerPreviewAnimations(container);container._previewActive=true};
+  requestAnimationFrame(playEnter);
+  var switchItems=container.querySelectorAll('.tab-item,.uline-item');
+  if(switchItems.length){var active=container.querySelector('.tab-item.active,.uline-item.active'),index=Array.prototype.indexOf.call(switchItems,active);var next=switchItems[(index+1+switchItems.length)%switchItems.length];if(next){var switchEvent=new MouseEvent('click',{bubbles:true,cancelable:true,view:window});switchEvent._motionEditorSynthetic=true;next.dispatchEvent(switchEvent)}}
+  if(key==='tab')advancePanePreview(container);
+}
 function bindPreviewInteraction(container,demo,key){
   var selector=previewHoverSelector(key,demo);
   if(selector){
@@ -206,6 +222,7 @@ function bindPreviewInteraction(container,demo,key){
     container.addEventListener('mousemove',function(e){if(!container._previewActive)e.stopImmediatePropagation()},true);
     container.addEventListener('click',function(e){
       var target=e.target.closest(selector);if(!target||!container.contains(target))return;
+      e._motionPreviewHandled=true;
       clearTimeout(container._exitTimer);
       if(container._previewActive&&demo.exitEnabled){
         var leaveEvent=new MouseEvent('mouseleave',{bubbles:false});leaveEvent._motionClickTrigger=true;target.dispatchEvent(leaveEvent);
@@ -216,6 +233,12 @@ function bindPreviewInteraction(container,demo,key){
       if(container._previewActive){var resetEvent=new MouseEvent('mouseleave',{bubbles:false});resetEvent._motionClickTrigger=true;target.dispatchEvent(resetEvent);void target.offsetWidth;requestAnimationFrame(playEnter)}else playEnter();
     });
   }
+  container.addEventListener('click',function(e){
+    if(e._motionPreviewHandled||e._motionEditorSynthetic)return;
+    if(e.target.closest('[data-editor-control],button,input,select,textarea,a,[role="button"]')&&!e.target.closest('.anim-target'))return;
+    e._motionPreviewHandled=true;
+    triggerEditorPreview(container,demo,key,selector);
+  });
   container.addEventListener('click',function(e){if(e.target.closest('.fade-stage,.scale-stage,.blur-stage'))advancePanePreview(container)});
 }
 function render(key){
@@ -265,7 +288,7 @@ function createDemoCard(demo,idx,key,parent){
     var info=document.createElement('div');info.className='demo-info';
     var nameRow=document.createElement('div');nameRow.className='demo-name';nameRow.innerHTML='<span>'+MotionAnimations.getDisplayName(demo)+'</span>';info.appendChild(nameRow);
     var params=document.createElement('div');params.className='demo-params';
-    params.innerHTML='<span><i class="fas fa-clock"></i> '+demo.duration+'</span><span><i class="fas fa-hourglass-start"></i> '+(demo.delay||'0s')+'</span>'+(demo.exitEnabled?'<span><i class="fas fa-rotate-left"></i> 回退</span>':'')+'<span class="curve-badge"><i class="fas fa-chart-line"></i> '+demo.curve+'</span>';
+    params.innerHTML='<span><i class="fas fa-clock"></i> '+demo.duration+'</span><span><i class="fas fa-hourglass-start"></i> '+(demo.delay||'0s')+'</span>'+(demo.exitEnabled?'<span><i class="fas fa-rotate-left"></i> 回退</span>':'');
     info.appendChild(params);
     var actions=document.createElement('div');actions.className='demo-actions';
     var cssTag=document.createElement('span');cssTag.className='css-tag';cssTag.style.cssText='font-size:11px;color:#a29bfe;background:rgba(108,92,231,0.12);padding:2px 10px;border-radius:30px;';cssTag.textContent='CSS';actions.appendChild(cssTag);
@@ -350,19 +373,24 @@ var title=document.getElementById('editorTitle');
 var durSlider=document.getElementById('editorDuration');
 var durInput=document.getElementById('editorDurationInput');
 var unitBtn=document.getElementById('editorUnitToggle');
+var delaySlider=document.getElementById('editorDelay');
+var delayInput=document.getElementById('editorDelayInput');
+var delayUnitBtn=document.getElementById('editorDelayUnitToggle');
 var curveInput=document.getElementById('editorCurve');
 var exitToggle=document.getElementById('editorExitToggle');
 var cssBox=document.getElementById('editorCss');
+var cssText=cssBox?cssBox.querySelector('.editor-css-text'):null;
 var presets=document.getElementById('editorPresets');
 var liveStage=document.getElementById('editorLiveStage');
 var directionInput=document.getElementById('editorDirection'),directionDial=document.getElementById('directionDial'),directionNeedle=directionDial.querySelector('.direction-needle');
 var curveHelp=document.querySelector('.curve-help'),curveHelpPopover=curveHelp?curveHelp.querySelector('.curve-help-popover'):null;
 var card=null,demo=null,key=null,idx=null;
 var directionRenderFrame=0;
-var origDuration='',origCurve='',origCss='',origDirection=null,origExitEnabled=true,origSavedDefault=null,origOriginalData=null;
-var unit='ms';
+var origDuration='',origDelay='0s',origCurve='',origCss='',origDirection=null,origExitEnabled=true,origSavedDefault=null,origOriginalData=null;
+var unit='ms',delayUnit='ms';
 var storageKey='motion-playground-pro-animation-defaults-v1';
 var savedDefaults={};
+var cssFitFrame=0;
 try{savedDefaults=JSON.parse(localStorage.getItem(storageKey)||'{}')}catch(e){savedDefaults={}}
 function demoStorageId(cat,item){return cat+'::'+item.name}
 Object.keys(MotionAnimations).forEach(function(cat){
@@ -374,6 +402,7 @@ Object.keys(MotionAnimations).forEach(function(cat){
     if(!saved)return;
     var rebuiltShare=cat==='card'&&item.name==='分享动画';
     if(!rebuiltShare&&typeof saved.duration==='string')item.duration=saved.duration;
+    if(!rebuiltShare&&typeof saved.delay==='string')item.delay=saved.delay;
     if(!rebuiltShare&&typeof saved.curve==='string')item.curve=saved.curve;
     if(!rebuiltShare&&typeof saved.css==='string')item.css=saved.css;
     if(typeof saved.direction==='number')item.direction=saved.direction;
@@ -389,6 +418,57 @@ function msToCss(ms){
   if(ms>=1000)return(ms/1000).toFixed(1).replace('.0','')+'s';
   return (ms/1000).toFixed(3).replace(/^0/,'').replace(/0+$/,'').replace(/\.$/,'')+'s';
 }
+function parseTimeMs(value){
+  var raw=String(value||'0').trim(),num=parseFloat(raw)||0;
+  return /ms$/i.test(raw)?Math.max(0,Math.round(num)):Math.max(0,Math.round(num*1000));
+}
+
+/* Keep the CSS preview readable without changing the full value used by copy/export. */
+function fitEditorCssBox(){
+  if(!cssBox||!cssText||!cssBox.isConnected)return;
+  var body=cssBox.closest('.editor-body');
+  if(!body||!body.clientHeight)return;
+  cssBox.classList.remove('is-clamped');
+  cssBox.style.removeProperty('--editor-css-lines');
+  cssBox.style.height='auto';
+  cssBox.style.maxHeight='none';
+  var css=getComputedStyle(cssBox),lineHeight=parseFloat(css.lineHeight)||19.2;
+  var verticalPadding=(parseFloat(css.paddingTop)||0)+(parseFloat(css.paddingBottom)||0)+(parseFloat(css.borderTopWidth)||0)+(parseFloat(css.borderBottomWidth)||0);
+  var naturalHeight=cssBox.scrollHeight;
+  var bodyRect=body.getBoundingClientRect(),boxRect=cssBox.getBoundingClientRect();
+  /* Convert the viewport distance back to the body's content coordinates. */
+  var visibleRemaining=bodyRect.bottom-boxRect.top-body.scrollTop;
+  var available=Math.max(0,Math.min(body.clientHeight,visibleRemaining));
+  if(naturalHeight<=available){return}
+  var lines=Math.max(1,Math.floor((available-verticalPadding)/lineHeight));
+  var displayHeight=Math.max(lineHeight+verticalPadding,lines*lineHeight+verticalPadding);
+  cssBox.style.setProperty('--editor-css-lines',String(lines));
+  cssBox.style.height=displayHeight+'px';
+  cssBox.classList.add('is-clamped');
+}
+function scheduleEditorCssFit(){
+  if(cssFitFrame)return;
+  cssFitFrame=requestAnimationFrame(function(){cssFitFrame=0;fitEditorCssBox()});
+}
+function setEditorCss(value){
+  var full=String(value==null?'':value);
+  if(!cssBox)return;
+  if(!cssText){cssText=document.createElement('span');cssText.className='editor-css-text';cssBox.replaceChildren(cssText)}
+  cssText.textContent=full;
+  cssBox.dataset.fullText=full;
+  scheduleEditorCssFit();
+}
+var editorBody=cssBox?cssBox.closest('.editor-body'):null;
+if(editorBody){
+  editorBody.addEventListener('scroll',scheduleEditorCssFit,{passive:true});
+  if(typeof ResizeObserver==='function')new ResizeObserver(scheduleEditorCssFit).observe(editorBody);
+}
+if(cssBox)cssBox.addEventListener('copy',function(e){
+  if(!e.clipboardData)return;
+  e.preventDefault();
+  e.clipboardData.setData('text/plain',cssBox.dataset.fullText||'');
+});
+window.addEventListener('resize',scheduleEditorCssFit);
 
 function positionCurveHelp(){
   if(!curveHelp||!curveHelpPopover)return;
@@ -488,7 +568,7 @@ function setDirection(value,replay){
 
 function open(cardEl,demoObj,cat,i){
   card=cardEl;demo=demoObj;key=cat;idx=i;
-  origDuration=demo.duration;origCurve=demo.curve;origCss=demo.css;origDirection=demo.direction;origExitEnabled=!!demo.exitEnabled;
+  origDuration=demo.duration;origDelay=demo.delay||'0s';origCurve=demo.curve;origCss=demo.css;origDirection=demo.direction;origExitEnabled=!!demo.exitEnabled;
   var savedId=demoStorageId(key,demo);origSavedDefault=Object.prototype.hasOwnProperty.call(savedDefaults,savedId)?JSON.parse(JSON.stringify(savedDefaults[savedId])):null;
   origOriginalData=OriginalData[key]&&OriginalData[key][idx]?JSON.parse(JSON.stringify(OriginalData[key][idx])):null;
   var ms=parseInt(demo.duration)||300;
@@ -498,11 +578,13 @@ function open(cardEl,demoObj,cat,i){
   durSlider.value=ms;
   durSlider.max=3000;durSlider.step=10;
   durInput.value=ms;
+  var delayMs=parseTimeMs(demo.delay||'0s');delayUnit='ms';delayUnitBtn.textContent='ms';delaySlider.value=Math.min(3000,delayMs);delayInput.value=delayMs;
   curveInput.value=demo.curve;
   updateExitToggle();
-  cssBox.textContent=demo.css;
+  setEditorCss(demo.css);
   updatePresetHighlight();
   overlay.classList.add('active');
+  scheduleEditorCssFit();
   renderLivePreview();
   updateDirectionControl(demo.direction===null?0:demo.direction);
 }
@@ -510,7 +592,7 @@ function open(cardEl,demoObj,cat,i){
 function close(commit){
   var renderKey=key;
   if(!commit&&demo){
-    demo.duration=origDuration;demo.curve=origCurve;demo.css=origCss;demo.direction=origDirection;demo.exitEnabled=origExitEnabled;
+    demo.duration=origDuration;demo.delay=origDelay;demo.curve=origCurve;demo.css=origCss;demo.direction=origDirection;demo.exitEnabled=origExitEnabled;
     if(origOriginalData&&OriginalData[key])OriginalData[key][idx]=origOriginalData;
     var savedId=demoStorageId(key,demo);
     if(origSavedDefault===null)delete savedDefaults[savedId];else savedDefaults[savedId]=origSavedDefault;
@@ -541,24 +623,30 @@ function apply(){
   var raw=parseFloat(durInput.value)||0;
   var ms=unit==='s'?Math.round(raw*1000):Math.round(raw/10)*10;
   if(ms<0)ms=0;
+  var delayRaw=parseFloat(delayInput.value)||0;
+  var delayMs=delayUnit==='s'?Math.round(delayRaw*1000):Math.round(delayRaw/10)*10;
+  if(delayMs<0)delayMs=0;
   var curve=curveInput.value.trim()||'ease';
   var durStr=msToCss(ms);
   demo.duration=ms+'ms';
+  demo.delay=delayMs===0?'0s':delayMs+'ms';
   demo.curve=curve;
-  var newCss=demo.css.replace(/\s*animation-direction:\s*reverse;?/g,'').replace(/\n?\/\* 回退动效：[^*]+\*\//g,'').replace(/\d+\.?\d*s/g,durStr).replace(/cubic-bezier\([^)]+\)|ease-in-out|ease-out|ease-in|ease|linear|steps\([^)]+\)/g,curve);
+  var delayStr=msToCss(delayMs);
+  var newCss=demo.css.replace(/\s*animation-direction:\s*reverse;?/g,'').replace(/\n?\/\* 回退动效：[^*]+\*\//g,'').replace(/\d+\.?\d*s/g,durStr).replace(/cubic-bezier\([^)]+\)|ease-in-out|ease-out|ease-in|ease|linear|steps\([^)]+\)/g,curve).replace(/(animation-delay\s*:\s*)[^;]+/g,'$1'+delayStr);
   if(demo.exitEnabled)newCss=newCss.replace(/\s*$/,'')+'\n/* 回退动效：使用相同参数反向播放 */';
   demo.css=newCss;
-  cssBox.textContent=newCss;
+  setEditorCss(newCss);
   if(unit==='ms'){durSlider.value=ms;durInput.value=ms}
   else{durSlider.value=ms;durInput.value=(ms/1000).toFixed(2).replace(/\.?0+$/,'')}
-  updPreview(ms,curve);
+  if(delayUnit==='ms'){delaySlider.value=Math.min(3000,delayMs);delayInput.value=delayMs}else{delaySlider.value=Math.min(3000,delayMs);delayInput.value=(delayMs/1000).toFixed(2).replace(/\.?0+$/,'')}
+  updPreview(ms,curve,delayMs);
   renderLivePreview();
   var params=card.querySelector('.demo-params');
-  if(params)params.innerHTML='<span><i class="fas fa-clock"></i> '+(ms+'ms')+'</span><span><i class="fas fa-hourglass-start"></i> '+(demo.delay||'0s')+'</span>'+(demo.exitEnabled?'<span><i class="fas fa-rotate-left"></i> 回退</span>':'')+'<span class="curve-badge"><i class="fas fa-chart-line"></i> '+curve+'</span>';
+  if(params)params.innerHTML='<span><i class="fas fa-clock"></i> '+(ms+'ms')+'</span><span><i class="fas fa-hourglass-start"></i> '+(demo.delay||'0s')+'</span>'+(demo.exitEnabled?'<span><i class="fas fa-rotate-left"></i> 回退</span>':'');
   updatePresetHighlight();
 }
 
-function updPreview(ms,curve){
+function updPreview(ms,curve,delayMs){
   var c=card.querySelector('.anim-target');if(!c)return;
   var dur=msToCss(ms);
   var els=c.querySelectorAll('*');
@@ -577,6 +665,7 @@ function updPreview(ms,curve){
     if(an&&an!=='none'&&ad&&ad!=='0s'&&ad!=='0ms'){
       el.style.animationDuration=dur;
       el.style.animationTimingFunction=curve;
+      if(delayMs!==undefined)el.style.animationDelay=msToCss(delayMs);
       el.style.animationDirection='normal';
     }
   });
@@ -587,6 +676,7 @@ function reset(){
   var orig=OriginalData[key][idx];
   if(!orig)return;
   demo.duration=orig.duration;
+  demo.delay=orig.delay||'0s';
   demo.curve=orig.curve;
   demo.css=orig.css;
   demo.exitEnabled=!!orig.exitEnabled;
@@ -596,8 +686,9 @@ function reset(){
   durSlider.max=3000;durSlider.step=10;
   durSlider.value=ms;
   durInput.value=ms;
+  var resetDelay=parseTimeMs(demo.delay);delayUnit='ms';delayUnitBtn.textContent='ms';delaySlider.value=Math.min(3000,resetDelay);delayInput.value=resetDelay;
   curveInput.value=orig.curve;
-  cssBox.textContent=orig.css;
+  setEditorCss(orig.css);
   updateExitToggle();
   if(demo.direction===null)updateDirectionControl(0);else setDirection(demo.direction,false);
   apply();
@@ -606,7 +697,7 @@ function reset(){
 function setDefault(){
   if(!demo||!key||idx==null)return;
   apply();
-  var saved={duration:demo.duration,curve:demo.curve,css:demo.css,direction:Number(demo.direction)||0,cancelExit:!demo.exitEnabled};
+  var saved={duration:demo.duration,delay:demo.delay||'0ms',curve:demo.curve,css:demo.css,direction:Number(demo.direction)||0,cancelExit:!demo.exitEnabled};
   savedDefaults[demoStorageId(key,demo)]=saved;
   try{localStorage.setItem(storageKey,JSON.stringify(savedDefaults))}catch(e){}
   OriginalData[key][idx]=JSON.parse(JSON.stringify(demo));
@@ -642,6 +733,9 @@ durSlider.addEventListener('input',function(){
 });
 durInput.addEventListener('change',function(){apply()});
 durInput.addEventListener('blur',function(){if(!this.value.trim())this.value=0;apply()});
+delaySlider.addEventListener('input',function(){delayInput.value=delayUnit==='s'?(this.value/1000).toFixed(2).replace(/\.?0+$/,''):this.value;apply()});
+delayInput.addEventListener('change',function(){apply()});
+delayInput.addEventListener('blur',function(){if(!this.value.trim())this.value=0;apply()});
 unitBtn.addEventListener('click',function(){
   if(unit==='ms'){
     var curMs=parseFloat(durSlider.value)||0;
@@ -654,6 +748,16 @@ unitBtn.addEventListener('click',function(){
     durSlider.max=3000;durSlider.step=10;durSlider.value=Math.round(curS*1000);
     durInput.value=Math.round(curS*1000);
   }
+});
+delayUnitBtn.addEventListener('click',function(){
+  if(delayUnit==='ms'){
+    var curDelayMs=parseFloat(delaySlider.value)||0;
+    delayUnit='s';delayUnitBtn.textContent='s';delaySlider.max=3;delaySlider.step=0.01;delaySlider.value=Math.min(3,curDelayMs/1000);delayInput.value=(curDelayMs/1000).toFixed(2).replace(/\.?0+$/,'');
+  }else{
+    var curDelayS=parseFloat(delayInput.value)||0;
+    delayUnit='ms';delayUnitBtn.textContent='ms';delaySlider.max=3000;delaySlider.step=10;delaySlider.value=Math.min(3000,Math.round(curDelayS*1000));delayInput.value=Math.round(curDelayS*1000);
+  }
+  apply();
 });
 curveInput.addEventListener('input',function(){apply()});
 presets.addEventListener('click',function(e){
@@ -669,7 +773,16 @@ function directionFromPointer(e){var angle=pointerAngle(e);if(e.shiftKey)angle=n
 directionDial.addEventListener('pointerdown',function(e){this.setPointerCapture(e.pointerId);directionFromPointer(e)});
 directionDial.addEventListener('pointermove',function(e){if(this.hasPointerCapture(e.pointerId))directionFromPointer(e)});
 directionDial.addEventListener('pointerup',function(e){if(this.hasPointerCapture(e.pointerId))this.releasePointerCapture(e.pointerId)});
-liveStage.addEventListener('click',function(){setTimeout(applyDirectionToLive,0)},true);
+liveStage.addEventListener('click',function(e){
+  if(!demo||e._motionStageForwarded||e.target.closest('.direction-control'))return;
+  setTimeout(applyDirectionToLive,0);
+  if(e.target.closest('.anim-target'))return;
+  var target=liveStage.querySelector('.anim-target');
+  if(!target)return;
+  var forwarded=new MouseEvent('click',{bubbles:true,cancelable:true,view:window});
+  forwarded._motionStageForwarded=true;
+  target.dispatchEvent(forwarded);
+},true);
 document.getElementById('editorClose').addEventListener('click',function(){close(false)});
 document.getElementById('editorClose2').addEventListener('click',function(){close(true)});
 document.getElementById('editorReset').addEventListener('click',reset);
