@@ -26,6 +26,10 @@ MotionAnimations.text = [
 {name:'Apple Hero',duration:'700ms',curve:'cubic-bezier(0.2,0.9,0.4,1)',css:'animation: appleHero .7s cubic-bezier(0.2,0.9,0.4,1) both',desc:'放大 + 字距变化',preview:function(c){c.innerHTML='<div class="text-demo" id="textHero"><div class="text-anim-wrap"><span class="t-hero t-line">Apple Hero</span></div></div>';var e=c.querySelector('.t-hero');var o=function(){e.style.animation='none';void e.offsetWidth;e.style.animation='appleHero .7s cubic-bezier(0.2,0.9,0.4,1) both'};o();setInterval(o,2500)}},
 {name:'跟随移动',duration:'600ms',curve:'cubic-bezier(0.25,0.46,0.45,0.94)',delay:'55ms',css:'animation: followMotionTrack .6s cubic-bezier(.25,.46,.45,.94) both; /* 所有字母依次淡入，回退时完整倒放 */ animation: followMotionLetter .32s ease-out both',desc:'首字母先淡入，整组左移时其余字母依次出现',preview:function(c){c.innerHTML='<div class="text-demo" id="textFollowMotion"><div class="text-anim-wrap follow-motion-track">FOLLOW</div></div>';var w=c.querySelector('.follow-motion-track'),text=w.textContent;w.textContent='';[...text].forEach(function(ch){var s=document.createElement('span');s.textContent=ch;w.appendChild(s)});var sp=w.querySelectorAll('span');var o=function(){w.style.animation='none';sp.forEach(function(s){s.style.animation='none';s.style.opacity=''});void w.offsetWidth;w.style.animation='followMotionTrack .6s cubic-bezier(.25,.46,.45,.94) both';sp.forEach(function(s,i){s.style.animation='followMotionLetter .32s ease-out both';s.style.animationDelay=(i===0?0:(.06+(i-1)*.055))+'s'})};o();setInterval(o,2500)}}
 ];
+/* ----- Number (1) ----- */
+MotionAnimations.number = [
+{name:'数字弹出',duration:'500ms',curve:'cubic-bezier(0.34,1.45,0.64,1)',delay:'70ms',css:'--digit-dur:500ms; --digit-distance:8px; --digit-stagger:70ms; --digit-blur:2px; --digit-ease:cubic-bezier(0.34,1.45,0.64,1); --digit-dir-x:0; --digit-dir-y:1; animation:t-digit-pop-in var(--digit-dur) var(--digit-ease) both;',desc:'字符依次从下方弹出并由模糊变清晰',preview:function(c){c.innerHTML='<div class="number-pop-demo"><span class="t-digit-group"><span class="t-digit">N</span><span class="t-digit" data-stagger="1">u</span><span class="t-digit" data-stagger="2">m</span><span class="t-digit" data-stagger="3">b</span><span class="t-digit" data-stagger="4">e</span><span class="t-digit" data-stagger="5">r</span><span class="t-digit">&nbsp;</span><span class="t-digit" data-stagger="6">p</span><span class="t-digit" data-stagger="7">o</span><span class="t-digit" data-stagger="8">p</span></span></div>';var g=c.querySelector('.t-digit-group'),play=function(){g.classList.remove('is-animating');void g.offsetWidth;g.classList.add('is-animating')};play();setInterval(play,2600)}}
+];
 /* ----- Button (9) ----- */
 MotionAnimations.button = [
 {name:'Hover Lift',duration:'200ms',curve:'cubic-bezier(0.2,0.9,0.4,1)',css:'transition: transform .2s cubic-bezier(0.2,0.9,0.4,1), box-shadow .2s ease',desc:'悬浮上移 + 阴影加深',preview:function(c){c.innerHTML='<div class="btn-demo" id="btnLift"><button class="demo-btn lift-btn">Hover me</button></div>';var b=c.querySelector('.demo-btn');b.addEventListener('mouseenter',function(){b.style.transform='translateY(-4px)';b.style.boxShadow='0 8px 24px rgba(108,92,231,0.35)'});b.addEventListener('mouseleave',function(){b.style.transform='';b.style.boxShadow=''})}},
@@ -60,7 +64,7 @@ MotionAnimations.list = [
 
 /* ===== Motion Playground Pro — Main App ===== */
 (function(){'use strict';
-var categoryMeta={tab:{title:'选项卡动效'},text:{title:'文字动效'},button:{title:'按钮动效'},card:{title:'卡片动效'},list:{title:'列表动效'}};
+var categoryMeta={tab:{title:'选项卡动效'},text:{title:'文字动效'},number:{title:'数字动效'},button:{title:'按钮动效'},card:{title:'卡片动效'},list:{title:'列表动效'}};
 var animationNameZh={
   'Morph Capsule':'滑动变形切换','Elastic':'弹性切换','Fade Switch':'淡入淡出切换','Scale':'缩放切换','Underline':'下划线滑动','Liquid':'液态变形','Material Ripple':'材质涟漪',
   'Fade Up':'向上淡入','Blur Reveal':'模糊显现','Character Stagger':'字符错落','Word Stagger':'词语错落','Gradient Flow':'渐变流动','Mask Reveal':'遮罩显现','Typewriter':'打字机','Glow':'文字发光','Rotate In':'旋转进入','Apple Hero':'主视觉缩放',
@@ -77,8 +81,8 @@ try{customDemos=JSON.parse(localStorage.getItem(customKey)||'{}')}catch(e){custo
 var bundledDefaults={'tab::Liquid':{duration:'300ms',curve:'cubic-bezier(0.34,1.56,0.64,1)',css:'transition: border-radius .3s cubic-bezier(0.34,1.56,0.64,1)',cancelExit:true},'tab::Morph Capsule':{duration:'300ms',curve:'cubic-bezier(.22,1,.36,1)',css:'transition: transform .3s cubic-bezier(.22,1,.36,1), width .3s cubic-bezier(.22,1,.36,1)',cancelExit:false}};
 var defaultsKey='motion-playground-pro-animation-defaults-v1';try{var storedDefaults=JSON.parse(localStorage.getItem(defaultsKey)||'{}');if(!Object.keys(storedDefaults).length){localStorage.setItem(defaultsKey,JSON.stringify(bundledDefaults))}}catch(e){}
 /* Apply each bundled group layout once, including for visitors with older local data. */
-var bundledGroups={tab:[{id:'tab-default',title:'默认分组🐼',collapsed:false,demos:['tab-builtin-0','tab-builtin-1','tab-builtin-2','tab-builtin-5','tab-builtin-6']},{id:'tab-group-1784960903636',title:'待调整',collapsed:true,demos:['tab-builtin-4','tab-builtin-7','tab-builtin-3']}],text:[{id:'text-default',title:'默认分组🐱',collapsed:false,demos:['text-builtin-0','text-builtin-2','text-builtin-5','text-builtin-6','text-builtin-9','text-builtin-10']},{id:'text-group-1785053388545',title:'待调整',collapsed:false,demos:['text-builtin-4','text-builtin-1','text-builtin-3','text-builtin-7','text-builtin-8']}],button:[{id:'button-group-1784954858315',title:'已使用动效🐘',collapsed:false,demos:['button-builtin-0']},{id:'button-default',title:'默认分组',collapsed:true,demos:['button-builtin-1','button-builtin-2','button-builtin-3','button-builtin-4','button-builtin-5','button-builtin-6','button-builtin-7','button-builtin-8']}],card:[{id:'card-group-1784961899915',title:'已使用动效🐄',collapsed:false,demos:['card-builtin-0']},{id:'card-default',title:'默认分组',collapsed:false,demos:['card-builtin-1','card-builtin-2','card-builtin-3','card-builtin-4','card-builtin-5','card-builtin-6']}],list:[{id:'list-default',title:'默认分组',collapsed:false,demos:['list-builtin-0','list-builtin-1','list-builtin-2']}]};
-var bundledGroupsVersion=2,groupsVersionKey='motion-playground-pro-groups-seed-version';
+var bundledGroups={tab:[{id:'tab-default',title:'默认分组🐼',collapsed:false,demos:['tab-builtin-0','tab-builtin-1','tab-builtin-2','tab-builtin-5','tab-builtin-6']},{id:'tab-group-1784960903636',title:'待调整',collapsed:true,demos:['tab-builtin-4','tab-builtin-7','tab-builtin-3']}],text:[{id:'text-default',title:'默认分组🐱',collapsed:false,demos:['text-builtin-0','text-builtin-2','text-builtin-5','text-builtin-6','text-builtin-9','text-builtin-10']},{id:'text-group-1785053388545',title:'待调整',collapsed:false,demos:['text-builtin-4','text-builtin-1','text-builtin-3','text-builtin-7','text-builtin-8']}],number:[{id:'number-default',title:'默认分组',collapsed:false,demos:['number-builtin-0']}],button:[{id:'button-group-1784954858315',title:'已使用动效🐘',collapsed:false,demos:['button-builtin-0']},{id:'button-default',title:'默认分组',collapsed:true,demos:['button-builtin-1','button-builtin-2','button-builtin-3','button-builtin-4','button-builtin-5','button-builtin-6','button-builtin-7','button-builtin-8']}],card:[{id:'card-group-1784961899915',title:'已使用动效🐄',collapsed:false,demos:['card-builtin-0']},{id:'card-default',title:'默认分组',collapsed:false,demos:['card-builtin-1','card-builtin-2','card-builtin-3','card-builtin-4','card-builtin-5','card-builtin-6']}],list:[{id:'list-default',title:'默认分组',collapsed:false,demos:['list-builtin-0','list-builtin-1','list-builtin-2']}]};
+var bundledGroupsVersion=3,groupsVersionKey='motion-playground-pro-groups-seed-version';
 try{if(parseInt(localStorage.getItem(groupsVersionKey)||'0',10)<bundledGroupsVersion){groupState=JSON.parse(JSON.stringify(bundledGroups));localStorage.setItem(groupsKey,JSON.stringify(groupState));localStorage.setItem(groupsVersionKey,String(bundledGroupsVersion))}}catch(e){if(!Object.keys(groupState).length)groupState=JSON.parse(JSON.stringify(bundledGroups))}
 Object.keys(customDemos).forEach(function(cat){
   if(!Array.isArray(MotionAnimations[cat]))return;
@@ -148,6 +152,21 @@ function showCopySuccess(btn){
       btn.innerHTML='<i class="fas fa-copy"></i>复制 CSS';
       btn.classList.remove('copy-success');
     },1400);
+}
+function bindDlsPressScale(btn){
+  if(!btn||btn.dataset.dlsPressBound)return;
+  btn.dataset.dlsPressBound='1';
+  function press(){
+    var r=btn.getBoundingClientRect();
+    btn.style.setProperty('--dls-button-or-anchor-width-px',r.width);
+    btn.style.setProperty('--dls-button-or-anchor-height-px',r.height);
+    btn.classList.add('is-pressed');
+  }
+  function release(){btn.classList.remove('is-pressed');}
+  btn.addEventListener('pointerdown',press);
+  btn.addEventListener('pointerup',release);
+  btn.addEventListener('pointercancel',release);
+  btn.addEventListener('pointerleave',release);
 }
 function syncDemoPreview(container,demo){
   var ms=parseInt(demo.duration)||300;
@@ -283,7 +302,6 @@ function createDemoCard(demo,idx,key,parent){
     card.addEventListener('dragstart',function(e){card.classList.add('card-dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',card.dataset.demoId)});
     card.addEventListener('dragend',function(){card.classList.remove('card-dragging');card.dataset.justDragged='1';setTimeout(function(){delete card.dataset.justDragged},150);document.querySelectorAll('.card-drop-target,.drag-over').forEach(function(el){el.classList.remove('card-drop-target');el.classList.remove('drag-over')})});
     var preview=document.createElement('div');preview.className='demo-preview demo-preview-'+key;
-    var badge=document.createElement('div');badge.className='demo-badge';badge.textContent=key;preview.appendChild(badge);
     var pc=document.createElement('div');pc.className='anim-target';preview.appendChild(pc);card.appendChild(preview);
     var info=document.createElement('div');info.className='demo-info';
     var nameRow=document.createElement('div');nameRow.className='demo-name';nameRow.innerHTML='<span>'+MotionAnimations.getDisplayName(demo)+'</span>';info.appendChild(nameRow);
@@ -291,8 +309,8 @@ function createDemoCard(demo,idx,key,parent){
     params.innerHTML='<span><i class="fas fa-clock"></i> '+demo.duration+'</span><span><i class="fas fa-hourglass-start"></i> '+(demo.delay||'0s')+'</span>'+(demo.exitEnabled?'<span><i class="fas fa-rotate-left"></i> 回退</span>':'');
     info.appendChild(params);
     var actions=document.createElement('div');actions.className='demo-actions';
-    var cssTag=document.createElement('span');cssTag.className='css-tag';cssTag.style.cssText='font-size:11px;color:#a29bfe;background:rgba(108,92,231,0.12);padding:2px 10px;border-radius:30px;';cssTag.textContent='CSS';actions.appendChild(cssTag);
-    var copyBtn=document.createElement('button');copyBtn.className='btn-copy';copyBtn.innerHTML='<i class="fas fa-copy"></i>复制 CSS';
+    var copyBtn=document.createElement('button');copyBtn.className='btn-copy dls-press-scale';copyBtn.innerHTML='<i class="fas fa-copy"></i>复制 CSS';
+    bindDlsPressScale(copyBtn);
     copyBtn.addEventListener('click',function(e){e.stopPropagation();copyToClipboard(demo.css);showCopySuccess(copyBtn)});
     actions.appendChild(copyBtn);info.appendChild(actions);card.appendChild(info);parent.appendChild(card);
     if(typeof demo.preview==='function'){
@@ -568,6 +586,7 @@ function setDirection(value,replay){
 
 function open(cardEl,demoObj,cat,i){
   card=cardEl;demo=demoObj;key=cat;idx=i;
+  overlay.dataset.category=cat;
   origDuration=demo.duration;origDelay=demo.delay||'0s';origCurve=demo.curve;origCss=demo.css;origDirection=demo.direction;origExitEnabled=!!demo.exitEnabled;
   var savedId=demoStorageId(key,demo);origSavedDefault=Object.prototype.hasOwnProperty.call(savedDefaults,savedId)?JSON.parse(JSON.stringify(savedDefaults[savedId])):null;
   origOriginalData=OriginalData[key]&&OriginalData[key][idx]?JSON.parse(JSON.stringify(OriginalData[key][idx])):null;
@@ -599,6 +618,7 @@ function close(commit){
     try{localStorage.setItem(storageKey,JSON.stringify(savedDefaults))}catch(e){}
   }
   overlay.classList.remove('active');
+  delete overlay.dataset.category;
   liveStage.innerHTML='';
   card=null;demo=null;
   if(!commit&&renderKey&&typeof MotionAnimations.render==='function')MotionAnimations.render(renderKey);
