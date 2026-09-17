@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<link rel="stylesheet" href="style.css?v=20260828-2">
-<link rel="stylesheet" href="visual-system.css?v=20260917-4">
+<link rel="stylesheet" href="style.css?v=20260918-theme-center-5">
+<link rel="stylesheet" href="visual-system.css?v=20260918-theme-center-5">
 </head>
 <body>
 <div class="launch-loader" id="launchLoader" role="status" aria-label="动效工坊正在加载">
@@ -31,10 +31,11 @@
       <li data-category="button"><i class="fas fa-hand-pointer"></i><span>按钮</span></li>
       <li data-category="card"><i class="fas fa-credit-card"></i><span>卡片</span></li>
       <li data-category="list"><i class="fas fa-list-ul"></i><span>列表</span></li>
+      <li data-category="loader"><i class="fas fa-spinner"></i><span>加载</span></li>
       <li id="navHelp"><i class="fas fa-table"></i><span>动效说明</span></li>
     </ul>
     <div class="theme-control"><button class="theme-toggle" id="themeToggle" aria-label="切换主题"><span class="theme-thumb"></span><img class="theme-sun" src="assets/sun.svg" alt=""><img class="theme-moon" src="assets/moon.svg" alt=""></button></div>
-    <div class="sidebar-footer">⚡ 动效设计工具 · v1.0</div>
+    <div class="sidebar-footer">动效设计工具 · v1.0</div>
   </nav>
   <div class="main">
     <div class="header"><h2 id="headerTitle">Tab Animations</h2><div class="header-actions"><span id="demoCounter">0 demos</span><button class="icon-tool" id="pageMore" title="更多功能"><i class="fas fa-bars"></i></button><div class="action-menu" id="pageActionMenu"><button data-action="add-demo"><i class="fas fa-plus"></i>新增动效</button><button data-action="add-group"><i class="fas fa-layer-group"></i>动效分组</button></div></div></div>
@@ -121,23 +122,24 @@
       <h3>新增动效</h3>
       <button type="button" id="addMotionClose" aria-label="关闭">&times;</button>
     </div>
-    <div class="editor-body">
-      <label class="motion-upload" id="motionUpload">
-        <input type="file" id="motionFile" accept=".html,.htm,.css,.js,.json,.svg,.gif,.webp,.png,.jpg,.jpeg,.mp4,.webm">
-        <span class="motion-upload-content"><i class="fas fa-arrow-up-from-bracket"></i><span class="motion-upload-title">上传动画文件</span><span class="motion-upload-hint">拖拽文件到这里，或点击选择 HTML、SVG、JSON、GIF、视频等格式</span></span>
-        <span class="motion-upload-file"><i class="far fa-file-code"></i><span id="motionFileName"></span></span>
-      </label>
-      <div class="motion-form-row">
-        <div class="editor-group"><label for="motionName">动效名称</label><input class="editor-input motion-form-input" id="motionName" placeholder="例如：卡片渐入" maxlength="40"></div>
-        <div class="editor-group"><label for="motionDuration">持续时间 (ms)</label><input class="editor-input motion-form-input" id="motionDuration" type="number" value="300" min="0" max="10000" step="10"></div>
+    <div class="editor-body add-motion-layout">
+      <div class="add-motion-source-row">
+        <section class="add-motion-source-pane add-motion-upload-pane">
+          <div class="editor-section-label">动效文件</div>
+          <label class="motion-upload" id="motionUpload">
+            <input type="file" id="motionFile" accept=".html,.htm,.json">
+            <span class="motion-upload-content"><i class="fas fa-arrow-up-from-bracket"></i><span class="motion-upload-title">上传动画文件</span><span class="motion-upload-hint">拖拽文件到这里，支持 HTML、JSON 格式</span></span>
+            <span class="motion-upload-file"><i class="far fa-file-code"></i><span id="motionFileName"></span></span>
+          </label>
+        </section>
       </div>
-      <div class="editor-group"><label for="motionCurve">缓动曲线</label><input class="editor-input motion-form-input" id="motionCurve" value="ease-out" spellcheck="false"></div>
-      <div class="editor-group"><label for="motionCss">CSS（可选）</label><textarea class="editor-input motion-form-textarea" id="motionCss" placeholder="animation: fadeUp .3s ease-out both" spellcheck="false"></textarea></div>
-      <div class="add-motion-error" id="addMotionError"></div>
-    </div>
-    <div class="editor-footer">
-      <button type="button" class="btn-add-cancel" id="addMotionCancel">取消</button>
-      <button type="submit" class="btn-add-submit">添加动效</button>
+      <section class="add-motion-settings">
+        <div class="editor-body">
+          <div class="editor-group"><label for="motionName">动效名称</label><input class="editor-input motion-form-input" id="motionName" placeholder="例如：卡片渐入" maxlength="40"></div>
+          <div class="add-motion-error" id="addMotionError"></div>
+        </div>
+        <div class="editor-footer"><button type="submit" class="btn-add-submit">添加动效</button></div>
+      </section>
     </div>
   </form>
 </div>
@@ -145,7 +147,7 @@
   <div class="editor-panel delete-confirm-panel">
     <div class="delete-confirm-icon"><i class="fas fa-trash"></i></div>
     <h3 class="delete-confirm-title" id="deleteGroupTitle">删除分组</h3>
-    <p class="delete-confirm-message">确定删除分组“<strong id="deleteGroupName"></strong>”吗？其中的动效将移入其他分组，此操作无法撤销。</p>
+    <p class="delete-confirm-message" id="deleteGroupMessage">此操作无法撤销。</p>
     <div class="delete-confirm-actions">
       <button type="button" class="delete-confirm-cancel" id="deleteGroupCancel">取消</button>
       <button type="button" class="delete-confirm-submit" id="deleteGroupSubmit">删除分组</button>
@@ -177,7 +179,19 @@
     </div>
   </div>
 </div>
-<script src="vendor/gsap/gsap.js"></script>
-<script src="script.js?v=20260917-2"></script>
+<div class="global-toast" id="globalToast" role="status" aria-live="polite"><i class="fas fa-check"></i><span></span></div>
+<script src="script.js?v=20260918-theme-center-5"></script>
+<script>
+/* The application must never leave the page covered if a non-critical preview fails. */
+window.setTimeout(function () {
+  var loader = document.getElementById('launchLoader');
+  if (!loader || loader.classList.contains('is-exiting')) return;
+  loader.classList.add('is-exiting');
+  window.setTimeout(function () {
+    document.body.classList.remove('is-launching');
+    loader.remove();
+  }, 300);
+}, 3200);
+</script>
 </body>
 </html>
