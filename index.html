@@ -8,8 +8,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<link rel="stylesheet" href="style.css?v=20260918-theme-center-5">
-<link rel="stylesheet" href="visual-system.css?v=20260918-theme-center-5">
+<link rel="stylesheet" href="vendor/swiper/swiper-bundle.min.css?v=12.0.3">
+<link rel="stylesheet" href="style.css?v=20261009-swiper-cards-3">
+<link rel="stylesheet" href="visual-system.css?v=20261009-4.1-light-card-surface-12px-button-text-blend">
+<style id="editor-top-gap-fix">#editorOverlay .editor-layout-panel{padding-top:4px!important}</style>
 </head>
 <body>
 <div class="launch-loader" id="launchLoader" role="status" aria-label="动效工坊正在加载">
@@ -27,18 +29,18 @@
     <ul class="sidebar-nav" id="navList">
       <li class="active" data-category="tab"><i class="fas fa-window-maximize"></i><span>选项卡</span></li>
       <li data-category="text"><i class="fas fa-font"></i><span>文字</span></li>
-      <li data-category="number"><i class="fas fa-hashtag"></i><span>数字</span></li>
       <li data-category="button"><i class="fas fa-hand-pointer"></i><span>按钮</span></li>
       <li data-category="card"><i class="fas fa-credit-card"></i><span>卡片</span></li>
       <li data-category="list"><i class="fas fa-list-ul"></i><span>列表</span></li>
       <li data-category="loader"><i class="fas fa-spinner"></i><span>加载</span></li>
       <li id="navHelp"><i class="fas fa-table"></i><span>动效说明</span></li>
+      <li id="navRecycle" class="recycle-nav" hidden><i class="fas fa-trash-can"></i><span>回收站</span><button class="recycle-close" type="button" aria-label="关闭回收站页签"><i class="fas fa-xmark"></i></button></li>
     </ul>
     <div class="theme-control"><button class="theme-toggle" id="themeToggle" aria-label="切换主题"><span class="theme-thumb"></span><img class="theme-sun" src="assets/sun.svg" alt=""><img class="theme-moon" src="assets/moon.svg" alt=""></button></div>
-    <div class="sidebar-footer">动效设计工具 · v1.0</div>
+    <div class="sidebar-footer">动效设计工具 · v1.4</div>
   </nav>
   <div class="main">
-    <div class="header"><h2 id="headerTitle">Tab Animations</h2><div class="header-actions"><span id="demoCounter">0 demos</span><button class="icon-tool" id="pageMore" title="更多功能"><i class="fas fa-bars"></i></button><div class="action-menu" id="pageActionMenu"><button data-action="add-demo"><i class="fas fa-plus"></i>新增动效</button><button data-action="add-group"><i class="fas fa-layer-group"></i>动效分组</button></div></div></div>
+    <div class="header"><h2 id="headerTitle">Tab Animations</h2><div class="header-actions"><span id="demoCounter">0 demos</span><button class="icon-tool" id="pageMore" title="更多功能"><i class="fas fa-bars"></i></button><div class="action-menu" id="pageActionMenu"><button data-action="add-demo"><i class="fas fa-plus"></i>新增动效</button><button data-action="add-group"><i class="fas fa-layer-group"></i>动效分组</button><button data-action="recycle-bin"><i class="fas fa-trash-can"></i>回收站</button></div></div></div>
     <div class="demo-grid" id="demoGrid"></div>
   </div>
 </div>
@@ -59,6 +61,10 @@
       </section>
       <div class="editor-settings">
     <div class="editor-body">
+      <div class="editor-group">
+        <label for="editorName">动效名称</label>
+        <input class="editor-input" id="editorName" type="text" maxlength="80" autocomplete="off">
+      </div>
       <div class="editor-group">
         <label>持续时间</label>
         <div class="editor-slider-row">
@@ -107,10 +113,9 @@
       </div>
     </div>
     <div class="editor-footer">
-      <button class="btn-editor-export" id="editorExport" type="button"><img src="assets/export.svg" alt="">导出</button>
       <button class="btn-editor-default" id="editorSetDefault">设为默认</button>
       <button class="btn-editor-reset" id="editorReset">重置</button>
-      <button class="btn-editor-close" id="editorClose2">完成</button>
+      <button class="btn-editor-export" id="editorExport" type="button"><img src="assets/export.svg" alt="">导出</button>
     </div>
       </div>
     </div>
@@ -147,7 +152,7 @@
   <div class="editor-panel delete-confirm-panel">
     <div class="delete-confirm-icon"><i class="fas fa-trash"></i></div>
     <h3 class="delete-confirm-title" id="deleteGroupTitle">删除分组</h3>
-    <p class="delete-confirm-message" id="deleteGroupMessage">此操作无法撤销。</p>
+    <p class="delete-confirm-message" id="deleteGroupMessage"></p>
     <div class="delete-confirm-actions">
       <button type="button" class="delete-confirm-cancel" id="deleteGroupCancel">取消</button>
       <button type="button" class="delete-confirm-submit" id="deleteGroupSubmit">删除分组</button>
@@ -180,7 +185,8 @@
   </div>
 </div>
 <div class="global-toast" id="globalToast" role="status" aria-live="polite"><i class="fas fa-check"></i><span></span></div>
-<script src="script.js?v=20260918-theme-center-5"></script>
+<script src="vendor/swiper/swiper-bundle.min.js?v=12.0.3"></script>
+<script src="script.js?v=20261009-4.1-stage-parity-2"></script>
 <script>
 /* The application must never leave the page covered if a non-critical preview fails. */
 window.setTimeout(function () {
@@ -191,7 +197,7 @@ window.setTimeout(function () {
     document.body.classList.remove('is-launching');
     loader.remove();
   }, 300);
-}, 3200);
+}, 2300);
 </script>
 </body>
 </html>
