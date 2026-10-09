@@ -205,7 +205,8 @@ var animationNameZh={
 var retiredDemoIds={'tab-builtin-3':true,'tab-builtin-4':true,'tab-builtin-7':true,'text-builtin-4':true};
 /* Assign shipped IDs before reading imports so older copies cannot create duplicate cards. */
 var bundledDemoIds=new Set();
-Object.keys(MotionAnimations).forEach(function(cat){if(Array.isArray(MotionAnimations[cat]))MotionAnimations[cat].forEach(function(d,i){bundledDemoIds.add(demoId(cat,d,i))})});
+var bundledDefinitions={};
+Object.keys(MotionAnimations).forEach(function(cat){if(Array.isArray(MotionAnimations[cat]))MotionAnimations[cat].forEach(function(d,i){var id=demoId(cat,d,i);bundledDemoIds.add(id);bundledDefinitions[id]=d})});
 var nameOverrides={};try{nameOverrides=JSON.parse(localStorage.getItem('motion-playground-pro-name-overrides-v1')||'{}')}catch(e){nameOverrides={}}
 MotionAnimations.getDisplayName=function(demo){return demo&&demo._id&&nameOverrides[demo._id]||demo.displayName||animationNameZh[demo.name]||demo.name};
 var currentCategory='tab',lastCategory='tab',navItems,demoGrid,headerTitle,demoCounter,selectedDemoIds=new Set();
@@ -288,6 +289,10 @@ function applyStoredCategoryState(){
   Object.keys(MotionAnimations).forEach(function(cat){if(Array.isArray(MotionAnimations[cat]))MotionAnimations[cat]=MotionAnimations[cat].filter(function(d){return !removedDemoIds[d._id]})});
 }
 applyStoredCategoryState();
+/* Final 4.2 release catalog captured from the user's local card lists. */
+var finalReleaseCatalog={tab:['tab-builtin-0','tab-builtin-1','tab-extra-fold','tab-extra-liquid-line'],text:['text-builtin-0','text-builtin-2','text-builtin-5','text-builtin-6','text-builtin-10','text-builtin-11','text-builtin-shimmer','text-builtin-gradient-text','text-extra-flip-chars','text-extra-rolling','number-builtin-0'],button:['button-builtin-0','button-extra-notification-badge','button-builtin-morph-action-pill','button-error-shake','button-extra-fill','button-extra-hold','tab-builtin-6'],card:['card-builtin-0','card-builtin-swiper-cards','card-builtin-stage-cover','card-builtin-dropdown-morph','card-builtin-stack-hover','card-extra-swipe-dismiss','card-extra-banner-stacking'],list:['list-extra-reveal','list-extra-filter','list-extra-timeline','list-builtin-4','list-builtin-5','list-builtin-6'],loader:['loader-dots-pulse-dots','loader-dots-bounce-dots','loader-dots-pulse-dot','loader-dots-grid-dots','loader-dots-triple-dot','loader-dots-apple-breathe','loader-dots-smooth-shift','loader-dots-magnetic-dots','loader-dots-drop-dot','loader-extra-conic','loader-extra-cubes','loader-extra-typing']};
+Object.keys(finalReleaseCatalog).forEach(function(cat){MotionAnimations[cat]=finalReleaseCatalog[cat].map(function(id){return bundledDefinitions[id]}).filter(Boolean)});
+MotionAnimations.number=[];
 MotionAnimations.recycle=recycleDemos.map(hydrateRecycleDemo);
 function saveGroups(){try{localStorage.setItem(groupsKey,JSON.stringify(groupState))}catch(e){}}
 function ensureGroups(cat){
@@ -410,11 +415,15 @@ function init(){
   headerTitle=document.getElementById('headerTitle');
   demoCounter=document.getElementById('demoCounter');
   var pageMore=document.getElementById('pageMore'),pageMenu=document.getElementById('pageActionMenu');
+  var exportCatalogButton=document.createElement('button');
+  exportCatalogButton.dataset.action='export-catalog';
+  exportCatalogButton.innerHTML='<i class="fas fa-download"></i>导出当前动效清单';
+  pageMenu.appendChild(exportCatalogButton);
   var recycleNav=document.getElementById('navRecycle');
   function closeMenus(except){document.querySelectorAll('.action-menu.open').forEach(function(m){if(m!==except){m.classList.remove('open');var card=m.closest('.demo-card'),section=m.closest('.motion-group');if(card)card.classList.remove('card-menu-open');if(section)section.classList.remove('menu-open')}});if(except!==pageMenu)pageMore.classList.remove('active')}
   pageMore.addEventListener('click',function(e){e.stopPropagation();var opening=!pageMenu.classList.contains('open');closeMenus(opening?pageMenu:null);pageMenu.classList.toggle('open',opening);pageMore.classList.toggle('active',opening)});
   pageMenu.addEventListener('pointerdown',function(e){e.stopPropagation()});
-  pageMenu.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var action=b.dataset.action;if(action==='add-demo')addDemo();else if(action==='add-group')addGroup();else if(action==='recycle-bin'){if(recycleNav)recycleNav.hidden=false;switchCategory('recycle')}pageMenu.classList.remove('open');pageMore.classList.remove('active')});
+  pageMenu.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var action=b.dataset.action;if(action==='add-demo')addDemo();else if(action==='add-group')addGroup();else if(action==='export-catalog')exportVisibleCatalog();else if(action==='recycle-bin'){if(recycleNav)recycleNav.hidden=false;switchCategory('recycle')}pageMenu.classList.remove('open');pageMore.classList.remove('active')});
   // Keep trigger clicks inside the menu interaction: pointerdown runs before
   // click, so treating the ellipsis button as an outside click would close
   // the menu first and make a second click reopen it instead of hiding it.
@@ -441,6 +450,18 @@ function init(){
   render('tab');
 }
 function getSelectedDemoIds(){return Array.from(selectedDemoIds)}
+function exportVisibleCatalog(){
+  var categories={},total=0;
+  document.querySelectorAll('#navList li[data-category]').forEach(function(item){
+    var cat=item.dataset.category;if(cat==='recycle'||!Array.isArray(MotionAnimations[cat]))return;
+    categories[cat]=MotionAnimations[cat].map(function(d,i){return {id:demoId(cat,d,i),name:MotionAnimations.getDisplayName(d),builtIn:bundledDemoIds.has(d._id)}});
+    total+=categories[cat].length;
+  });
+  var payload={format:'motion-playground-visible-catalog',version:1,total:total,categories:categories};
+  var url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}));
+  var link=document.createElement('a');link.href=url;link.download='motion-visible-catalog.json';document.body.appendChild(link);link.click();link.remove();
+  setTimeout(function(){URL.revokeObjectURL(url)},1000);
+}
 function removeIdsFromGroups(ids){Object.keys(groupState).forEach(function(cat){(groupState[cat]||[]).forEach(function(group){group.demos=(group.demos||[]).filter(function(id){return ids.indexOf(id)<0})})})}
 function moveDemosToCategory(ids,target){
   if(!Array.isArray(MotionAnimations[target])||!ids.length)return;
