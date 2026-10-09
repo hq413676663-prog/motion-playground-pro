@@ -1,27 +1,21 @@
-# GitHub 上传清单
+# 4.2 上传与上线清单
 
-## 上传内容
+## 发布前
 
-将项目内容放在仓库根目录，保持 `assets/`、`vendor/` 等相对路径。保留 Swiper 的 `LICENSE` 和 `.nojekyll`。不要上传 `.DS_Store`、编辑器临时文件或本地依赖目录。
+最终清单已由用户确认，共110项，详见 `ANIMATION_CATALOG.md`。可上传本目录发布。
 
-上传的是本文件夹里的内容，而非再套一层“动效工坊4.1”目录。`index.html` 应位于仓库根目录。使用网页上传时注意点号开头的 `.nojekyll` 和 `.gitignore`；`.gitignore` 只对通过 Git 提交的文件生效。`docs/reference/animations/` 是旧参考资料，不是当前入口使用的代码。
+## GitHub 文件位置
 
-项目无需构建命令、安装命令或 Node 服务。尚未指定项目自身的开源许可证；第三方库许可不代表本项目的许可。
+上传本目录里面的内容到 `hq413676663-prog/motion-playground-pro` 的 `main` 分支根目录。不要再套一层“动效工坊4.2”文件夹。确保 `index.html`、`script.js` 及样式文件为同一次提交的新版本，保持资源相对路径。
 
-## Pages 设置
+GitHub网页上传只覆盖同路径文件，不会自动删除新目录中已经没有的旧文件。可在仓库清理旧根目录 `animations/` 和 `docs/reference/animations/`；它们没有被当前入口加载，清理它们本身不会减少动效卡片。不要删除 `assets/`、`vendor/` 或许可证。
 
-在仓库 Settings → Pages 中选择 Deploy from a branch，选择上传的分支和 `/ (root)`。部署后使用 GitHub 给出的页面链接访问。
+排除 `.DS_Store` 等本机缓存；保留 `.gitignore`、`.nojekyll`。
 
-## 上线检查
+## 实际托管
 
-- 首页正常打开，六个动效分类可切换。
-- 白天和黑夜主题下组件颜色正确。
-- 动效卡片和弹窗预览的样式与交互一致。
-- 图标交换可点击切换；横幅叠加初始显示三层横幅。
-- 拖动排序后卡片正常归位，不意外打开弹窗。
-- 设为默认、重置和导出功能正常。
-- 网络可加载外部字体和 Font Awesome 图标。
+当前网站由 Cloudflare Pages 发布，不是 GitHub Pages。无需为此次更新另外启用 GitHub Pages。
 
-本地浏览器中的排序、主题、默认参数等个人设置不会随文件上传。GitHub Pages 属于新的站点地址，浏览器会为它单独保存设置。
+提交后确认 Cloudflare Pages 部署成功，且对应最新提交；再打开 https://motion-playground-pro.pages.dev/ 。如果看到的仍是旧页面，强制刷新，并检查该次部署是否已经完成。
 
-最终修改记录：`CHANGELOG.md`。本次整理后检查结果：`RELEASE_CHECK.md`。
+部署完成后，应分别用无痕窗口及有旧浏览器数据的窗口核对分类数量、删除项、白天/黑夜主题、卡片与弹窗和交互。浏览器保存的排序或个人删除状态仍可能导致个人可见数量不同，但发布停用清单中的动效不应重新出现。
