@@ -369,7 +369,7 @@ body {
   color: var(--text);
   background: rgba(255, 255, 255, .055);
 }
-.group-more { height: 36px; }
+.group-more { height: 30px; }
 
 .demo-card {
   /* Clip previews without allowing focus to scroll the card's contents. */
