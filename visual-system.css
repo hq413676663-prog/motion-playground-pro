@@ -2659,3 +2659,27 @@ body.light-theme :is(#demoGrid, #editorLiveStage) :is(
   border: 1px solid rgba(0, 0, 0, .08) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, .06) !important;
 }
+/* Compact search, shared by gallery and editor. */
+:is(#demoGrid,#editorLiveStage) .gooey-input-demo { position:relative; width:208px; height:42px; flex:none; }
+:is(#demoGrid,#editorLiveStage) .gooey-input-demo :is(.gooey-input-field,.gooey-input-search) { box-sizing:border-box; position:absolute; top:0; left:0; height:42px; border:0!important; border-radius:999px!important; background:#f0f0f0!important; color:#141414!important; box-shadow:none!important; }
+:is(#demoGrid,#editorLiveStage) .gooey-input-field { width:160px; transform:translateX(24px); overflow:hidden; transition:transform 550ms cubic-bezier(.22,1,.36,1),width 550ms cubic-bezier(.22,1,.36,1); }
+:is(#demoGrid,#editorLiveStage) .gooey-input-search { z-index:2; width:42px!important; min-width:42px!important; padding:0!important; display:grid; place-items:center; transform:translateX(24px); cursor:pointer; transition:transform 550ms cubic-bezier(.22,1,.36,1); }
+:is(#demoGrid,#editorLiveStage) .gooey-input-field input { box-sizing:border-box; width:100%; height:100%; min-width:0; border:0!important; outline:0; background:transparent!important; color:#141414!important; font:500 13px/20px "PingFang SC",sans-serif!important; padding:0 14px 0 45px; transition:padding 550ms cubic-bezier(.22,1,.36,1); }
+:is(#demoGrid,#editorLiveStage) .gooey-input-field input::placeholder { color:#666; opacity:1; }
+:is(#demoGrid,#editorLiveStage) .gooey-input-demo:not(.is-open) .gooey-input-search { border-color:transparent!important; background:transparent!important; }
+:is(#demoGrid,#editorLiveStage) .gooey-input-demo.is-open .gooey-input-search { transform:translateX(0); }
+:is(#demoGrid,#editorLiveStage) .gooey-input-demo.is-open .gooey-input-field { transform:translateX(52px); width:156px; }
+:is(#demoGrid,#editorLiveStage) .gooey-input-demo.is-open input { padding-left:16px; }
+:is(#demoGrid,#editorLiveStage) .gooey-input-bridge { position:absolute; z-index:1; left:30px; top:12px; width:32px; height:18px; border:0; background:#f0f0f0; border-radius:50%; opacity:0; pointer-events:none; }
+:is(#demoGrid,#editorLiveStage) .gooey-input-demo.is-morphing .gooey-input-bridge { animation:gooeyInputNeck 550ms ease-out both; }
+:is(#demoGrid,#editorLiveStage) .gooey-input-demo :is(button,input):focus-visible { outline:2px solid #aaa; outline-offset:3px; }
+@keyframes gooeyInputNeck { 0% { opacity:0; transform:scale(1,1); } 18% { opacity:1; transform:scale(1.1,.9); } 55% { opacity:1; transform:scale(.7,.25); } 75%,100% { opacity:0; transform:scale(.2,0); } }
+@media(prefers-reduced-motion:reduce) { :is(#demoGrid,#editorLiveStage) .gooey-input-demo * { transition:none!important; animation:none!important; } }
+/* Floating dock: identical dimensions in gallery and live editor. */
+:is(#demoGrid,#editorLiveStage) .floating-dock { display:flex; flex:none; width:max-content; align-items:flex-end; gap:10px; height:52px; box-sizing:border-box; padding:8px 10px; border-radius:999px; background:#f0f0f0; overflow:visible; }
+:is(#demoGrid,#editorLiveStage) .floating-dock-slot { position:relative; display:block; flex:none; width:var(--dock-width,36px); height:36px; transition:width 280ms cubic-bezier(.22,1,.36,1); }
+:is(#demoGrid,#editorLiveStage) .floating-dock-button { box-sizing:border-box; display:grid; place-items:center; width:36px!important; min-width:36px!important; height:36px!important; padding:0!important; border:1px solid rgba(0,0,0,.08)!important; border-radius:50%!important; background:#fff!important; color:#666!important; box-shadow:none!important; cursor:pointer; transform-origin:center bottom; transform:translateY(var(--dock-y,0px)) scale(var(--dock-scale,1)); transition:transform 280ms cubic-bezier(.22,1,.36,1),color 200ms ease; }
+:is(#demoGrid,#editorLiveStage) .floating-dock-button { position:absolute; left:50%; bottom:0; margin-left:-18px; }
+:is(#demoGrid,#editorLiveStage) .floating-dock-button svg { width:18px; height:18px; flex:none; }
+:is(#demoGrid,#editorLiveStage) .floating-dock-button:focus-visible { outline:2px solid #aaa; outline-offset:3px; }
+@media(prefers-reduced-motion:reduce) { :is(#demoGrid,#editorLiveStage) .floating-dock * { transition:none!important; } }
