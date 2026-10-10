@@ -1573,8 +1573,8 @@ body.light-theme .sidebar-nav li:not(.active):hover,
 body.light-theme .sidebar-nav li:not(.active):hover span,
 body.light-theme .sidebar-nav li:not(.active):hover i { color:var(--text-secondary)!important; }
 
-/* The pseudo-element owns the divider so its top and bottom both inset 12px. */
-.sidebar { box-shadow:none!important; }
+/* Only ::after draws the segmented divider; a solid border would fill its gaps. */
+.sidebar { border-right-color:transparent!important; box-shadow:none!important; }
 
 /* Break the recycle separator before it meets the right divider. */
 .sidebar-nav li.recycle-nav::before { right:0; }
