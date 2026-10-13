@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:host { display:block; width:280px; font-family:ui-sans-serif,system-ui,sans-serif; line-height:1.5; }
+
+/* Keep vertical centering independent of Motion transform, as in Tailwind 4. */
+.-translate-y-1\/2 { translate:0 -50%; --tw-translate-y:0px; }
+
+/* Color-only theme adaptation. */
+.bg-foreground { background-color:var(--gooey-surface,#09090b); }
+.text-background { color:var(--gooey-ink,#ffffff); }
+input::placeholder { color:var(--gooey-placeholder,#a8a8a8)!important; }
